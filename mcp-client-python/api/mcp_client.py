@@ -16,7 +16,7 @@ from anthropic.types import Message
 
 class MCPClient:
     def __init__(self):
-        # Initialize session and client objects
+        # Initialize session and client objects.
         self.session: Optional[ClientSession] = None
         self.exit_stack = AsyncExitStack()
         self.llm = Anthropic()
