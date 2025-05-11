@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Documentation Search</h1>
+        
+        <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+            <form id="searchForm" class="space-y-4">
+                <div>
+                    <label for="query" class="block text-sm font-medium text-gray-700">Search Query</label>
+                    <input type="text" id="query" name="query" required
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label for="library" class="block text-sm font-medium text-gray-700">Select Library</label>
+                    <select id="library" name="library" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Select a library...</option>
+                        <option value="langchain">LangChain</option>
+                        <option value="llama-index">LlamaIndex</option>
+                        <option value="openai">OpenAI</option>
+                    </select>
+                </div>
+                
+                <button type="submit"
+                        class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Search
+                </button>
+            </form>
+            
+            <div id="result" class="mt-6 hidden">
+                <h2 class="text-xl font-semibold mb-2 text-gray-800">Results</h2>
+                <div id="resultContent" class="bg-gray-50 p-4 rounded-md text-gray-700 whitespace-pre-wrap"></div>
+            </div>
+            
+            <div id="error" class="mt-6 hidden">
+                <div class="bg-red-50 text-red-700 p-4 rounded-md"></div>
+            </div>
+            
+            <div id="loading" class="mt-6 hidden">
+                <div class="flex justify-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const form = e.target;
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            const errorDiv = document.getElementById('error');
+            const loadingDiv = document.getElementById('loading');
+            
+            // Reset UI
+            resultDiv.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+            loadingDiv.classList.remove('hidden');
+            
+            try {
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: form.query.value,
+                        library: form.library.value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultContent.textContent = data.result;
+                    resultDiv.classList.remove('hidden');
+                } else {
+                    errorDiv.querySelector('div').textContent = data.error || 'An error occurred';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorDiv.querySelector('div').textContent = 'Failed to connect to the server. Please try again.';
+                errorDiv.classList.remove('hidden');
+            } finally {
+                loadingDiv.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html> 
